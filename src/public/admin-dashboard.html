@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>VintaStep Admin Command Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f7fb;
+        margin: 0;
+        padding: 0;
+        color: #0f172a;
+      }
+      header {
+        background: #0f172a;
+        color: #fff;
+        padding: 24px 32px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.4);
+      }
+      main {
+        padding: 24px 32px 80px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      h2 {
+        margin-top: 40px;
+        margin-bottom: 16px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px 8px;
+        border-bottom: 1px solid #edf2f7;
+        font-size: 14px;
+      }
+      th {
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-size: 12px;
+        color: #64748b;
+      }
+      .controls,
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      input,
+      select,
+      button {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #cbd5f5;
+        font-size: 14px;
+      }
+      button {
+        background: #0f9d8d;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 600;
+        transition: transform 120ms ease, box-shadow 120ms ease;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(15, 157, 141, 0.25);
+      }
+      button.secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+      button.ghost {
+        background: transparent;
+        color: #0f172a;
+        border: 1px dashed #cbd5f5;
+      }
+      button.small {
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-size: 12px;
+      }
+      .token-warning {
+        background: #fffbe6;
+        border: 1px solid #facc15;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .two-column {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+      .list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .list li {
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        cursor: pointer;
+      }
+      .muted {
+        color: #64748b;
+        font-size: 13px;
+      }
+      #user-detail-card h4 {
+        margin: 0 0 6px;
+      }
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      .stat-row span:first-child {
+        color: #64748b;
+      }
+      pre {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 16px;
+        border-radius: 12px;
+        overflow: auto;
+        font-size: 12px;
+      }
+      @media (max-width: 720px) {
+        main {
+          padding: 16px;
+        }
+        header {
+          padding: 20px 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>VintaStep Admin</h1>
+      <p>Confirm orders, unblock users, reseed the database, and keep your marketplace clean.</p>
+    </header>
+    <main>
+      <div class="token-warning">
+        <div>
+          <strong>Admin token:</strong>
+          <span id="token-indicator">not set</span>
+        </div>
+        <button class="secondary" onclick="setAdminToken()">Update token</button>
+        <button class="ghost" onclick="bootstrap()">Reconnect</button>
+      </div>
+
+      <section>
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0;">Snapshot</h2>
+          <div class="row" style="margin: 0;">
+            <button class="secondary" onclick="reseedDatabase()">Reseed database</button>
+            <button onclick="downloadSnapshot()">Download snapshot</button>
+          </div>
+        </div>
+        <div class="grid" id="summary-grid"></div>
+      </section>
+
+      <section>
+        <h2>Orders & Escrow</h2>
+        <div class="controls">
+          <select id="order-status-filter">
+            <option value="">All statuses</option>
+            <option value="pending_payment">Pending payment</option>
+            <option value="pending_shipment">Pending shipment</option>
+            <option value="shipped">Shipped</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button onclick="loadOrders()">Refresh</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Status</th>
+              <th>Total</th>
+              <th>Placed at</th>
+              <th style="min-width: 180px;">Admin actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>People</h2>
+        <div class="two-column">
+          <div class="card">
+            <h3>Create / Search</h3>
+            <div class="controls">
+              <input id="new-user-email" type="email" placeholder="User email" />
+              <input id="new-user-password" type="password" placeholder="Temp password" />
+              <button onclick="createUser()">Create user</button>
+            </div>
+            <div class="controls">
+              <input id="user-search-input" type="text" placeholder="Search email or user id" />
+              <button class="secondary" onclick="searchDirectory()">Search</button>
+              <button class="ghost" onclick="loadUsers()">Recent users</button>
+            </div>
+            <ul class="list" id="user-search-results"></ul>
+            <h4>Latest signups</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Joined</th>
+                  <th>ID</th>
+                </tr>
+              </thead>
+              <tbody id="users-body"></tbody>
+            </table>
+          </div>
+          <div class="card" id="user-detail-card">
+            <h3>User insight</h3>
+            <p class="muted">Select a user from search or the recent list to load their profile.</p>
+            <div id="user-detail"></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Database metrics</h2>
+        <div class="row">
+          <button class="secondary" onclick="loadDbMetrics()">Refresh metrics</button>
+          <span id="db-uptime" class="muted"></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Table</th>
+              <th>Approx. rows</th>
+            </tr>
+          </thead>
+          <tbody id="db-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script>
+      const apiBase = '/api/v1/admin';
+      let selectedUserId = null;
+
+      function getToken() {
+        return localStorage.getItem('adminToken') || '';
+      }
+
+      function setAdminToken() {
+        const token = prompt('Enter admin dashboard token');
+        if (token) {
+          localStorage.setItem('adminToken', token.trim());
+          document.getElementById('token-indicator').textContent = 'configured';
+          bootstrap();
+        }
+      }
+
+      async function request(path, options = {}) {
+        const token = getToken();
+        if (!token) {
+          alert('Set the admin token first.');
+          throw new Error('missing token');
+        }
+
+        const response = await fetch(`${apiBase}${path}`, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-token': token,
+            ...(options.headers || {}),
+          },
+        });
+
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({ message: 'Unknown error' }));
+          throw new Error(body.message || 'Request failed');
+        }
+
+        return response.json();
+      }
+
+      function formatCurrency(value) {
+        return `$${Number(value || 0).toFixed(2)}`;
+      }
+
+      async function loadSummary() {
+        try {
+          const { data } = await request('/dashboard');
+          const grid = document.getElementById('summary-grid');
+          grid.innerHTML = '';
+          const entries = [
+            ['Users', data.totalUsers],
+            ['Listings', data.totalListings],
+            ['Orders', data.totalOrders],
+            ['Pending orders', data.pendingOrders],
+          ];
+          entries.forEach(([label, value]) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<h3>${label}</h3><p style="font-size:34px;font-weight:700;">${value}</p>`;
+            grid.appendChild(card);
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function loadOrders() {
+        const status = document.getElementById('order-status-filter').value;
+        const query = status ? `?status=${encodeURIComponent(status)}` : '';
+        try {
+          const { data } = await request(`/orders${query}`);
+          const body = document.getElementById('orders-body');
+          body.innerHTML = '';
+          data.forEach((order) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${order.id}</td>
+              <td>${order.status}</td>
+              <td>${formatCurrency(order.total_amount || order.totalAmount)}</td>
+              <td>${order.placed_at || order.placedAt}</td>
+              <td>
+                <select data-order="${order.id}" onchange="changeStatus(event)">
+                  <option value="">Update status...</option>
+                  <option value="pending_payment">Pending payment</option>
+                  <option value="pending_shipment">Pending shipment</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <button class="small secondary" onclick="forceConfirmOrder('${order.id}')">Force confirm</button>
+              </td>`;
+            body.appendChild(tr);
+          });
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function changeStatus(event) {
+        const orderId = event.target.getAttribute('data-order');
+        const status = event.target.value;
+        if (!status) return;
+        try {
+          await request(`/orders/${orderId}/status`, {
+            method: 'POST',
+            body: JSON.stringify({ status }),
+          });
+          loadOrders();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function forceConfirmOrder(orderId) {
+        if (!confirm('Force release escrow and mark this order completed?')) {
+          return;
+        }
+        try {
+          await request(`/orders/${orderId}/confirm`, { method: 'POST' });
+          loadOrders();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function loadUsers() {
+        try {
+          const { data } = await request('/users');
+          const body = document.getElementById('users-body');
+          body.innerHTML = '';
+          data.forEach((user) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><button class="ghost" style="padding:4px 6px" onclick="viewUserDetail('${user.id}')">${user.email}</button></td><td>${user.created_at}</td><td>${user.id}</td>`;
+            body.appendChild(tr);
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function searchDirectory() {
+        const query = document.getElementById('user-search-input').value.trim();
+        if (!query) {
+          alert('Enter an email or user id to search');
+          return;
+        }
+        try {
+          const { data } = await request(`/users/search?q=${encodeURIComponent(query)}`);
+          const list = document.getElementById('user-search-results');
+          list.innerHTML = '';
+          if (!data.length) {
+            list.innerHTML = '<li>No matches found.</li>';
+            return;
+          }
+          data.forEach((user) => {
+            const item = document.createElement('li');
+            item.innerHTML = `<strong>${user.email}</strong><br/><span class="muted">${user.id}</span>`;
+            item.addEventListener('click', () => viewUserDetail(user.id));
+            list.appendChild(item);
+          });
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function viewUserDetail(userId) {
+        try {
+          const { data } = await request(`/users/${userId}`);
+          selectedUserId = userId;
+          const panel = document.getElementById('user-detail');
+          panel.innerHTML = `
+            <h4>${data.email}</h4>
+            <div class="stat-row"><span>Full name</span><span>${data.full_name || '—'}</span></div>
+            <div class="stat-row"><span>Phone</span><span>${data.phone || '—'}</span></div>
+            <div class="stat-row"><span>Verified</span><span>${data.is_phone_verified ? 'Yes' : 'No'}</span></div>
+            <div class="stat-row"><span>Rating</span><span>${data.rating ?? '—'}</span></div>
+            <div class="stat-row"><span>Joined</span><span>${data.created_at}</span></div>
+            <hr/>
+            <div class="stat-row"><span>Orders</span><span>${data.orderStats.totalOrders}</span></div>
+            <div class="stat-row"><span>Gross volume</span><span>${formatCurrency(data.orderStats.grossVolume)}</span></div>
+            <div class="stat-row"><span>Listings</span><span>${data.listingStats.totalListings}</span></div>
+            <h5>Recent orders</h5>
+            <ul class="list" style="max-height: 180px; overflow:auto;">
+              ${data.recentOrders
+                .map(
+                  (o) => `<li>
+                    <strong>${o.id}</strong>
+                    <div class="muted">${o.status} · ${formatCurrency(o.total_amount)}</div>
+                    <div class="muted">${o.placed_at}</div>
+                  </li>`,
+                )
+                .join('') || '<li>No orders yet.</li>'}
+            </ul>
+            <h5>Recent listings</h5>
+            <ul class="list" style="max-height: 180px; overflow:auto;">
+              ${data.recentListings
+                .map(
+                  (l) => `<li>
+                    <strong>${l.title}</strong>
+                    <div class="muted">${formatCurrency(l.price)} · ${l.status}</div>
+                    <div class="muted">${l.created_at}</div>
+                  </li>`,
+                )
+                .join('') || '<li>No listings yet.</li>'}
+            </ul>`;
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function createUser() {
+        const email = document.getElementById('new-user-email').value.trim();
+        const password = document.getElementById('new-user-password').value.trim();
+        if (!email || !password) {
+          alert('Provide email and password');
+          return;
+        }
+        try {
+          await request('/users', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+          });
+          document.getElementById('new-user-email').value = '';
+          document.getElementById('new-user-password').value = '';
+          loadUsers();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function loadDbMetrics() {
+        try {
+          const { data } = await request('/db/metrics');
+          document.getElementById('db-uptime').textContent = `Uptime: ${data.uptimeSeconds} seconds`;
+          const body = document.getElementById('db-body');
+          body.innerHTML = '';
+          data.tables.forEach((table) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${table.tableName}</td><td>${table.estimatedRows}</td>`;
+            body.appendChild(tr);
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function reseedDatabase() {
+        if (!confirm('This will wipe and reseed the database. Continue?')) {
+          return;
+        }
+        try {
+          await request('/db/reseed', { method: 'POST' });
+          alert('Database reseeded.');
+          loadSummary();
+          loadOrders();
+          loadUsers();
+          loadDbMetrics();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function downloadSnapshot() {
+        try {
+          const { data } = await request('/db/export');
+          const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: 'application/json',
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `vintastep-snapshot-${Date.now()}.json`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function bootstrap() {
+        document.getElementById('token-indicator').textContent = getToken() ? 'configured' : 'not set';
+        if (!getToken()) return;
+        await Promise.allSettled([
+          loadSummary(),
+          loadOrders(),
+          loadUsers(),
+          loadDbMetrics(),
+        ]);
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('user-search-input').addEventListener('keyup', (event) => {
+          if (event.key === 'Enter') {
+            searchDirectory();
+          }
+        });
+        bootstrap();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1473 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VintaStep Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --dark: #1e293b;
+      --gray: #64748b;
+      --light-gray: #f1f5f9;
+      --border: #e2e8f0;
+      --white: #ffffff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--light-gray);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 260px;
+      height: 100vh;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 1000;
+      transition: transform 0.3s;
+    }
+
+    .sidebar.mobile-hidden {
+      transform: translateX(-100%);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-section {
+      margin-bottom: 25px;
+    }
+
+    .nav-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      background: var(--light-gray);
+      color: var(--dark);
+    }
+
+    .nav-item.active {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .nav-item i {
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 260px;
+      padding: 30px;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: var(--white);
+      padding: 20px 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .stat-card.success::before { background: var(--success); }
+    .stat-card.warning::before { background: var(--warning); }
+    .stat-card.danger::before { background: var(--danger); }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 15px;
+      background: var(--light-gray);
+      color: var(--primary);
+    }
+
+    .stat-card.success .stat-icon { background: #d1fae5; color: var(--success); }
+    .stat-card.warning .stat-icon { background: #fef3c7; color: var(--warning); }
+    .stat-card.danger .stat-icon { background: #fee2e2; color: var(--danger); }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--gray);
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .stat-change {
+      font-size: 12px;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    .stat-change.positive { color: var(--success); }
+    .stat-change.negative { color: var(--danger); }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--light-gray);
+      color: var(--dark);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: var(--white);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: var(--white);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--gray);
+      border-bottom: 2px solid var(--border);
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    tr:hover {
+      background: var(--light-gray);
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-primary { background: #dbeafe; color: var(--primary); }
+    .badge-success { background: #d1fae5; color: var(--success); }
+    .badge-warning { background: #fef3c7; color: var(--warning); }
+    .badge-danger { background: #fee2e2; color: var(--danger); }
+    .badge-gray { background: var(--light-gray); color: var(--gray); }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--gray);
+    }
+
+    /* Alert */
+    .alert {
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .alert-info { background: #dbeafe; color: #1e40af; }
+    .alert-success { background: #d1fae5; color: #065f46; }
+    .alert-warning { background: #fef3c7; color: #92400e; }
+    .alert-danger { background: #fee2e2; color: #991b1b; }
+
+    /* Charts Container */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .chart-card {
+      background: var(--white);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-placeholder {
+      height: 250px;
+      background: var(--light-gray);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    /* Loading */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--light-gray);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Mobile Menu Toggle */
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      z-index: 999;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .mobile-menu-toggle {
+        display: block;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Page Sections */
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--gray);
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <i class="fas fa-shoe-prints"></i>
+      VintaStep
+    </div>
+
+    <nav>
+      <div class="nav-section">
+        <div class="nav-title">Main</div>
+        <a class="nav-item active" data-page="dashboard">
+          <i class="fas fa-chart-line"></i>
+          Dashboard
+        </a>
+        <a class="nav-item" data-page="analytics">
+          <i class="fas fa-chart-bar"></i>
+          Analytics
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Management</div>
+        <a class="nav-item" data-page="users">
+          <i class="fas fa-users"></i>
+          Users
+        </a>
+        <a class="nav-item" data-page="listings">
+          <i class="fas fa-list"></i>
+          Listings
+        </a>
+        <a class="nav-item" data-page="orders">
+          <i class="fas fa-shopping-cart"></i>
+          Orders
+        </a>
+        <a class="nav-item" data-page="categories">
+          <i class="fas fa-tags"></i>
+          Categories
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Moderation</div>
+        <a class="nav-item" data-page="reports">
+          <i class="fas fa-flag"></i>
+          Reports
+        </a>
+        <a class="nav-item" data-page="verifications">
+          <i class="fas fa-id-card"></i>
+          Verifications
+        </a>
+        <a class="nav-item" data-page="notifications">
+          <i class="fas fa-bell"></i>
+          Notifications
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">System</div>
+        <a class="nav-item" data-page="settings">
+          <i class="fas fa-cog"></i>
+          Settings
+        </a>
+        <a class="nav-item" data-page="database">
+          <i class="fas fa-database"></i>
+          Database
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Dashboard Page -->
+    <section class="page-section active" id="page-dashboard">
+      <div class="header">
+        <h1>Dashboard Overview</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="loadAllData()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+          <button class="btn btn-primary" onclick="openModal('tokenModal')">
+            <i class="fas fa-key"></i> Admin Token
+          </button>
+        </div>
+      </div>
+
+      <div id="token-alert" class="alert alert-warning" style="display: none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Admin token not configured. Click "Admin Token" to set it up.</span>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <!-- Stats will be loaded here -->
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="card-header">
+            <h3 class="card-title">Revenue Overview</h3>
+          </div>
+          <div class="chart-placeholder">
+            <i class="fas fa-chart-area" style="font-size: 48px; opacity: 0.2;"></i>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="card-header">
+            <h3 class="card-title">Order Status Distribution</h3>
+          </div>
+          <div class="chart-placeholder">
+            <i class="fas fa-chart-pie" style="font-size: 48px; opacity: 0.2;"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Orders</h3>
+          <button class="btn btn-sm btn-secondary" onclick="navigateTo('orders')">View All</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrdersTable">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--gray);">
+                  <div class="loading"></div> Loading...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Users Page -->
+    <section class="page-section" id="page-users">
+      <div class="header">
+        <h1>User Management</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="loadUsers()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+          <button class="btn btn-primary" onclick="openModal('createUserModal')">
+            <i class="fas fa-plus"></i> Create User
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <input type="text" id="userSearchInput" placeholder="Search by email or user ID..." onkeyup="handleUserSearch(event)">
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Full Name</th>
+                <th>Rating</th>
+                <th>Phone Verified</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders Page -->
+    <section class="page-section" id="page-orders">
+      <div class="header">
+        <h1>Order Management</h1>
+        <div class="header-actions">
+          <select id="orderStatusFilter" onchange="loadOrders()">
+            <option value="">All Statuses</option>
+            <option value="pending_payment">Pending Payment</option>
+            <option value="pending_shipment">Pending Shipment</option>
+            <option value="shipped">Shipped</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button class="btn btn-secondary" onclick="loadOrders()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Placed At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories Page -->
+    <section class="page-section" id="page-categories">
+      <div class="header">
+        <h1>Category Management</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="loadCategories()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+          <button class="btn btn-primary" onclick="openModal('createCategoryModal')">
+            <i class="fas fa-plus"></i> Add Category
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Display Order</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="categoriesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reports Page -->
+    <section class="page-section" id="page-reports">
+      <div class="header">
+        <h1>Reports & Moderation</h1>
+        <div class="header-actions">
+          <select id="reportStatusFilter" onchange="loadReports()">
+            <option value="">All Reports</option>
+            <option value="pending">Pending</option>
+            <option value="reviewing">Reviewing</option>
+            <option value="resolved">Resolved</option>
+            <option value="dismissed">Dismissed</option>
+          </select>
+          <button class="btn btn-secondary" onclick="loadReports()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Report ID</th>
+                <th>Reporter</th>
+                <th>Reported Item</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Listings Page -->
+    <section class="page-section" id="page-listings">
+      <div class="header">
+        <h1>Listings Management</h1>
+        <div class="header-actions">
+          <select id="listingStatusFilter" onchange="loadListings()">
+            <option value="">All Listings</option>
+            <option value="ACTIVE">Active</option>
+            <option value="RESERVED">Reserved</option>
+            <option value="SOLD">Sold</option>
+          </select>
+          <button class="btn btn-secondary" onclick="loadListings()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Seller</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="listingsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Database Page -->
+    <section class="page-section" id="page-database">
+      <div class="header">
+        <h1>Database Management</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="loadDbMetrics()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+          <button class="btn btn-primary" onclick="exportDatabase()">
+            <i class="fas fa-download"></i> Export Data
+          </button>
+          <button class="btn btn-danger" onclick="confirmReseed()">
+            <i class="fas fa-redo"></i> Reseed Database
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Database Metrics</h3>
+        <div id="dbUptime" class="alert alert-info" style="display: none;"></div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Table Name</th>
+                <th>Estimated Rows</th>
+              </tr>
+            </thead>
+            <tbody id="dbMetricsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Other Pages Placeholders -->
+    <section class="page-section" id="page-analytics">
+      <div class="header">
+        <h1>Analytics</h1>
+      </div>
+      <div class="card">
+        <div class="empty-state">
+          <i class="fas fa-chart-line"></i>
+          <h3>Analytics Coming Soon</h3>
+          <p>Advanced analytics and reporting features will be available here.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="page-verifications">
+      <div class="header">
+        <h1>User Verifications</h1>
+      </div>
+      <div class="card">
+        <div class="empty-state">
+          <i class="fas fa-id-card"></i>
+          <h3>Verification Queue Empty</h3>
+          <p>No pending verification requests at this time.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="page-notifications">
+      <div class="header">
+        <h1>Notifications</h1>
+      </div>
+      <div class="card">
+        <div class="empty-state">
+          <i class="fas fa-bell"></i>
+          <h3>Notification Center</h3>
+          <p>Manage system-wide notifications and alerts here.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="page-settings">
+      <div class="header">
+        <h1>Settings</h1>
+      </div>
+      <div class="card">
+        <div class="empty-state">
+          <i class="fas fa-cog"></i>
+          <h3>System Settings</h3>
+          <p>Configure system-wide settings and preferences.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Modals -->
+  <!-- Admin Token Modal -->
+  <div class="modal" id="tokenModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Configure Admin Token</h2>
+        <button class="close-modal" onclick="closeModal('tokenModal')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Admin Token</label>
+        <input type="password" id="adminTokenInput" placeholder="Enter admin token">
+      </div>
+      <button class="btn btn-primary" onclick="saveAdminToken()">Save Token</button>
+    </div>
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal" id="createUserModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Create New User</h2>
+        <button class="close-modal" onclick="closeModal('createUserModal')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="newUserEmail" placeholder="user@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="newUserPassword" placeholder="Temporary password">
+      </div>
+      <button class="btn btn-primary" onclick="createUser()">Create User</button>
+    </div>
+  </div>
+
+  <!-- Create Category Modal -->
+  <div class="modal" id="createCategoryModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Category</h2>
+        <button class="close-modal" onclick="closeModal('createCategoryModal')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category Name</label>
+        <input type="text" id="newCategoryName" placeholder="e.g., Sneakers">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Slug</label>
+        <input type="text" id="newCategorySlug" placeholder="e.g., sneakers">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea id="newCategoryDescription" rows="3" placeholder="Category description"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="createCategory()">Create Category</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api/v1/admin';
+    let currentPage = 'dashboard';
+
+    // Token Management
+    function getToken() {
+      return localStorage.getItem('adminToken') || '';
+    }
+
+    function saveAdminToken() {
+      const token = document.getElementById('adminTokenInput').value.trim();
+      if (token) {
+        localStorage.setItem('adminToken', token);
+        closeModal('tokenModal');
+        document.getElementById('token-alert').style.display = 'none';
+        loadAllData();
+      }
+    }
+
+    // API Request Helper
+    async function apiRequest(endpoint, options = {}) {
+      const token = getToken();
+      if (!token) {
+        document.getElementById('token-alert').style.display = 'flex';
+        throw new Error('Admin token not configured');
+      }
+
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': token,
+          ...(options.headers || {}),
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Request failed' }));
+        throw new Error(error.message);
+      }
+
+      return response.json();
+    }
+
+    // Navigation
+    function navigateTo(page) {
+      // Hide all pages
+      document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      // Show selected page
+      document.getElementById(`page-${page}`).classList.add('active');
+      document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+      currentPage = page;
+
+      // Load page data
+      loadPageData(page);
+
+      // Close sidebar on mobile
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('active');
+      }
+    }
+
+    function loadPageData(page) {
+      switch(page) {
+        case 'dashboard': loadDashboard(); break;
+        case 'users': loadUsers(); break;
+        case 'orders': loadOrders(); break;
+        case 'categories': loadCategories(); break;
+        case 'reports': loadReports(); break;
+        case 'listings': loadListings(); break;
+        case 'database': loadDbMetrics(); break;
+      }
+    }
+
+    // Dashboard
+    async function loadDashboard() {
+      try {
+        const { data } = await apiRequest('/dashboard');
+        
+        const statsHtml = `
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">${data.totalUsers || 0}</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon"><i class="fas fa-list"></i></div>
+            <div class="stat-label">Active Listings</div>
+            <div class="stat-value">${data.totalListings || 0}</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">${data.totalOrders || 0}</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-label">Pending Orders</div>
+            <div class="stat-value">${data.pendingOrders || 0}</div>
+          </div>
+        `;
+        
+        document.getElementById('statsGrid').innerHTML = statsHtml;
+        
+        // Load recent orders
+        const ordersResponse = await apiRequest('/orders?limit=5');
+        renderRecentOrders(ordersResponse.data);
+      } catch (error) {
+        console.error('Failed to load dashboard:', error);
+      }
+    }
+
+    function renderRecentOrders(orders) {
+      const tbody = document.getElementById('recentOrdersTable');
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No orders found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(order => `
+        <tr>
+          <td><strong>${order.id.substring(0, 8)}...</strong></td>
+          <td>${order.buyer_email || 'N/A'}</td>
+          <td><span class="badge badge-${getStatusColor(order.status)}">${order.status}</span></td>
+          <td><strong>$${parseFloat(order.total_amount || 0).toFixed(2)}</strong></td>
+          <td>${new Date(order.placed_at).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="viewOrderDetail('${order.id}')">View</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Users
+    async function loadUsers() {
+      try {
+        const { data } = await apiRequest('/users');
+        const tbody = document.getElementById('usersTable');
+        
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No users found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(user => `
+          <tr>
+            <td><strong>${user.email}</strong></td>
+            <td>${user.full_name || '—'}</td>
+            <td>${user.rating ? user.rating.toFixed(1) : '—'}</td>
+            <td><span class="badge badge-${user.is_phone_verified ? 'success' : 'gray'}">${user.is_phone_verified ? 'Verified' : 'Not Verified'}</span></td>
+            <td>${new Date(user.created_at).toLocaleDateString()}</td>
+            <td>
+              <button class="btn btn-sm btn-secondary" onclick="viewUserDetail('${user.id}')">View</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to load users:', error);
+      }
+    }
+
+    async function handleUserSearch(event) {
+      if (event.key === 'Enter') {
+        const query = document.getElementById('userSearchInput').value.trim();
+        if (query) {
+          try {
+            const { data } = await apiRequest(`/users/search?q=${encodeURIComponent(query)}`);
+            const tbody = document.getElementById('usersTable');
+            
+            if (!data || data.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No users found</td></tr>';
+              return;
+            }
+
+            tbody.innerHTML = data.map(user => `
+              <tr>
+                <td><strong>${user.email}</strong></td>
+                <td>${user.full_name || '—'}</td>
+                <td>${user.rating ? user.rating.toFixed(1) : '—'}</td>
+                <td><span class="badge badge-${user.is_phone_verified ? 'success' : 'gray'}">${user.is_phone_verified ? 'Verified' : 'Not Verified'}</span></td>
+                <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                <td>
+                  <button class="btn btn-sm btn-secondary" onclick="viewUserDetail('${user.id}')">View</button>
+                </td>
+              </tr>
+            `).join('');
+          } catch (error) {
+            console.error('Search failed:', error);
+          }
+        }
+      }
+    }
+
+    async function createUser() {
+      const email = document.getElementById('newUserEmail').value.trim();
+      const password = document.getElementById('newUserPassword').value.trim();
+      
+      if (!email || !password) {
+        alert('Please provide both email and password');
+        return;
+      }
+
+      try {
+        await apiRequest('/users', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        });
+        
+        closeModal('createUserModal');
+        document.getElementById('newUserEmail').value = '';
+        document.getElementById('newUserPassword').value = '';
+        loadUsers();
+        alert('User created successfully');
+      } catch (error) {
+        alert('Failed to create user: ' + error.message);
+      }
+    }
+
+    // Orders
+    async function loadOrders() {
+      try {
+        const status = document.getElementById('orderStatusFilter')?.value || '';
+        const query = status ? `?status=${encodeURIComponent(status)}` : '';
+        const { data } = await apiRequest(`/orders${query}`);
+        const tbody = document.getElementById('ordersTable');
+        
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--gray);">No orders found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(order => `
+          <tr>
+            <td><strong>${order.id.substring(0, 10)}...</strong></td>
+            <td>${order.buyer_email || 'N/A'}</td>
+            <td>${order.seller_email || 'N/A'}</td>
+            <td><span class="badge badge-${getStatusColor(order.status)}">${order.status}</span></td>
+            <td><strong>$${parseFloat(order.total_amount || 0).toFixed(2)}</strong></td>
+            <td>${new Date(order.placed_at).toLocaleDateString()}</td>
+            <td>
+              <select class="btn btn-sm" onchange="updateOrderStatus('${order.id}', this.value)">
+                <option value="">Change Status</option>
+                <option value="pending_payment">Pending Payment</option>
+                <option value="pending_shipment">Pending Shipment</option>
+                <option value="shipped">Shipped</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+      }
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      if (!status) return;
+      
+      try {
+        await apiRequest(`/orders/${orderId}/status`, {
+          method: 'POST',
+          body: JSON.stringify({ status }),
+        });
+        loadOrders();
+        alert('Order status updated');
+      } catch (error) {
+        alert('Failed to update order: ' + error.message);
+      }
+    }
+
+    // Categories
+    async function loadCategories() {
+      try {
+        const { data } = await apiRequest('/categories');
+        const tbody = document.getElementById('categoriesTable');
+        
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">No categories found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(cat => `
+          <tr>
+            <td><strong>${cat.name}</strong></td>
+            <td><code>${cat.slug}</code></td>
+            <td>${cat.description || '—'}</td>
+            <td><span class="badge badge-${cat.is_active ? 'success' : 'gray'}">${cat.is_active ? 'Active' : 'Inactive'}</span></td>
+            <td>${cat.display_order}</td>
+            <td>
+              <button class="btn btn-sm btn-secondary" onclick="editCategory('${cat.id}')">Edit</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    }
+
+    async function createCategory() {
+      const name = document.getElementById('newCategoryName').value.trim();
+      const slug = document.getElementById('newCategorySlug').value.trim();
+      const description = document.getElementById('newCategoryDescription').value.trim();
+      
+      if (!name || !slug) {
+        alert('Please provide category name and slug');
+        return;
+      }
+
+      try {
+        await apiRequest('/categories', {
+          method: 'POST',
+          body: JSON.stringify({ name, slug, description }),
+        });
+        
+        closeModal('createCategoryModal');
+        document.getElementById('newCategoryName').value = '';
+        document.getElementById('newCategorySlug').value = '';
+        document.getElementById('newCategoryDescription').value = '';
+        loadCategories();
+        alert('Category created successfully');
+      } catch (error) {
+        alert('Failed to create category: ' + error.message);
+      }
+    }
+
+    // Reports (placeholder)
+    async function loadReports() {
+      const tbody = document.getElementById('reportsTable');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--gray);">No reports available</td></tr>';
+    }
+
+    // Listings (placeholder)
+    async function loadListings() {
+      const tbody = document.getElementById('listingsTable');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--gray);">Loading listings...</td></tr>';
+    }
+
+    // Database
+    async function loadDbMetrics() {
+      try {
+        const { data } = await apiRequest('/db/metrics');
+        
+        const uptimeDiv = document.getElementById('dbUptime');
+        uptimeDiv.style.display = 'flex';
+        uptimeDiv.innerHTML = `<i class="fas fa-server"></i> Database Uptime: ${data.uptimeSeconds} seconds`;
+        
+        const tbody = document.getElementById('dbMetricsTable');
+        tbody.innerHTML = data.tables.map(table => `
+          <tr>
+            <td><strong>${table.tableName}</strong></td>
+            <td>${table.estimatedRows}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to load database metrics:', error);
+      }
+    }
+
+    async function exportDatabase() {
+      try {
+        const { data } = await apiRequest('/db/export');
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `vintastep-export-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        alert('Database exported successfully');
+      } catch (error) {
+        alert('Failed to export database: ' + error.message);
+      }
+    }
+
+    async function confirmReseed() {
+      if (confirm('Are you sure you want to reseed the database? This will delete all existing data!')) {
+        try {
+          await apiRequest('/db/reseed', { method: 'POST' });
+          alert('Database reseeded successfully');
+          loadAllData();
+        } catch (error) {
+          alert('Failed to reseed database: ' + error.message);
+        }
+      }
+    }
+
+    // Utilities
+    function getStatusColor(status) {
+      const colors = {
+        'pending_payment': 'warning',
+        'pending_shipment': 'primary',
+        'shipped': 'primary',
+        'completed': 'success',
+        'cancelled': 'danger',
+        'ACTIVE': 'success',
+        'RESERVED': 'warning',
+        'SOLD': 'gray',
+      };
+      return colors[status] || 'gray';
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    function viewUserDetail(userId) {
+      alert('User detail view coming soon for: ' + userId);
+    }
+
+    function viewOrderDetail(orderId) {
+      alert('Order detail view coming soon for: ' + orderId);
+    }
+
+    function editCategory(categoryId) {
+      alert('Category edit coming soon for: ' + categoryId);
+    }
+
+    function loadAllData() {
+      loadPageData(currentPage);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Setup navigation
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const page = item.getAttribute('data-page');
+          navigateTo(page);
+        });
+      });
+
+      // Check token and load initial data
+      if (getToken()) {
+        document.getElementById('token-alert').style.display = 'none';
+        loadDashboard();
+      } else {
+        document.getElementById('token-alert').style.display = 'flex';
+      }
+    });
+  </script>
+</body>
+</html>
